@@ -12,14 +12,17 @@ var positionTarget = {
 var moveLeft = false;
 var moveRight = false;
 var speed = 20;
-var bullets = 99;
+var bullets = 9;
 var player = document.querySelector('#player');
 var target = document.querySelector('#target');
 var rocket = document.querySelector('#rocket');
 var counter = 0;
 var score = 0;
-var targetSpeed = 1;
-var rocketSpeed = 15;
+var targetSpeed = 5;
+var rocketSpeed = 10;
+var gameStatus = true;
+var shotDone = false;
+var cnt = 0;
 
 	document.addEventListener('keydown', function(e) {
 		if (e.keyCode == KEY_LEFT) {
@@ -48,16 +51,19 @@ var rocketSpeed = 15;
 		
 		if (e.keyCode == SPACE_KEY) {
 			if (bullets < 0) {
+				cnt++;
+				if (cnt == 1) {	
+					setTimeout(endGame, 5000);
+				}
 				return;
 			}
+		
 			counter ++;
-			createRocket(counter);
-		
-			
+			createRocket(counter);		
 			document.querySelector('#ammo').innerHTML = bullets;
-			bullets --;		
+			bullets --;	
+			
 		}
-		
 	},false);
 	function selectRocket (num) {
 		return document.querySelector('#shell'+num);
@@ -71,18 +77,44 @@ var rocketSpeed = 15;
 		bullet.style.left = curLeft + 'px';
 		bullet.style.top = 835 +'px';
 		document.querySelector('.container').appendChild (bullet);
+		shotDone = false;
+	}
+	function explodeOnImpact (left) {
+		var explosion = document.createElement('div');
+		explosion.className = 'rocketBlowing';
+		explosion.style.top = '150px';
+		explosion.style.left = left;
+		document.querySelector('.container').appendChild (explosion);
+		setTimeout(function () {
+			explosion.style.display = 'none';
+		},400)
+		
 	}
 	function moveUp (rocket) {
 		rocket.style.top = parseInt(rocket.style.top) - rocketSpeed + 'px';
 		
-		if (rocket.style.top == '195px' && (parseInt(rocket.style.left) >= positionTarget.left && parseInt(rocket.style.left) <= positionTarget.left + 150)) {
-			rocket.style.display = 'none';
+		if (rocket.style.top == '205px' && (parseInt(rocket.style.left) >= positionTarget.left && parseInt(rocket.style.left) <= positionTarget.left + 150)) {
+			shotDone = true;
+			rocket.style.display = 'none';	
+			explodeOnImpact(rocket.style.left);
 			score++;
 			document.querySelector('#score').innerHTML = score;
-			
 		}
-		
-	
+		if (parseInt(rocket.style.top) <= 110) {
+			rocket.style.display = 'none';
+			shotDone = true;
+		} 
+	}
+	function endGame() {
+		var over = document.createElement('div');
+		over.className = 'endScore';
+		document.querySelector('.container').appendChild(over);
+			if (score > 5) {
+				over.innerHTML = "YOU WON!!!";			
+			}
+			else {
+				over.innerHTML = "BETTER LUCK NEXT TIME";
+		}	
 	}
 	function onFrame() {
 		if (position.left <= 205) {
@@ -118,5 +150,5 @@ var rocketSpeed = 15;
 		requestAnimationFrame(onFrame);
 		
 	}
-	
 	requestAnimationFrame(onFrame);
+	
